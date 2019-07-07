@@ -1,0 +1,50 @@
+# @see https://docs.docker.com/compose/compose-file/
+
+version: '2'
+
+services:
+  mysql:
+    build: ./mysql
+    environment:
+        MYSQL_ROOT_PASSWORD: root
+#        MYSQL_USER: gitbucket
+#        MYSQL_PASSWORD: gitbucket
+#        MYSQL_DATABASE: gitbucket
+    volumes:
+      - ./mysql/sql:/docker-entrypoint-initdb.d
+      - repository_mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    restart: always
+  redmine:
+    build: ./redmine
+    ports:
+      - 3000:3000
+    environment:
+      REDMINE_DB_MYSQL: mysql
+      REDMINE_DB_USERNAME: redmine
+      REDMINE_DB_PASSWORD: redmine
+      REDMINE_DB_DATABASE: redmine
+    depends_on:
+      - mysql
+    restart: always
+  gitbucket:
+    build: ./gitbucket
+    restart: always
+    ports:
+      - 8080:8080
+      - 29418:29418
+    volumes:
+      - ./gitbucket/script:/gitbucket/script
+      - ./gitbucket/backup:/gitbucket/backup
+    depends_on:
+      - mysql
+    environment:
+      - GITBUCKET_DB_URL=jdbc:mysql://mysql/gitbucket?useUnicode=true&characterEncoding=utf8
+      - GITBUCKET_DB_USER=gitbucket
+      - GITBUCKET_DB_PASSWORD=gitbucket
+    command: ["/gitbucket/script/wait-for-it.sh", "mysql:3306", "--", "java", "-jar", "/opt/gitbucket.war"]
+    restart: always
+volumes:
+  repository_mysql:
+
