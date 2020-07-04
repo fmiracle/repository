@@ -16,18 +16,6 @@ services:
     ports:
       - "3306:3306"
     restart: always
-  redmine:
-    build: ./redmine
-    ports:
-      - 3000:3000
-    environment:
-      REDMINE_DB_MYSQL: mysql
-      REDMINE_DB_USERNAME: redmine
-      REDMINE_DB_PASSWORD: redmine
-      REDMINE_DB_DATABASE: redmine
-    depends_on:
-      - mysql
-    restart: always
   gitbucket:
     build: ./gitbucket
     restart: always
@@ -47,4 +35,3 @@ services:
     restart: always
 volumes:
   repository_mysql:
-
